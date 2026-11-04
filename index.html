@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#f7e8ed">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ひとめぼれ本棚">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>ひとめぼれ本棚</title>
+<style>
+ :root{color-scheme:light;--bg:#fff8f5;--panel:#fff;--line:#f0dce1;--muted:#987f87;--accent:#d97996;--ink:#59434b;--mint:#dcefe7}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 10% 0%,#ffe8ee 0,transparent 38%),var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif}
+button,input{font:inherit}button{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:16px;padding:11px 14px;cursor:pointer;box-shadow:0 3px 10px #b87b8a12}button:disabled{opacity:.4}
+header{position:sticky;top:0;z-index:5;background:#fff9f6eF;backdrop-filter:blur(16px);border-bottom:1px solid var(--line);padding:max(12px,env(safe-area-inset-top)) 16px 12px;display:flex;align-items:center;justify-content:space-between}
+.brand{font-weight:800;letter-spacing:.04em;color:#a65370}.brand small{display:block;color:var(--muted);font-size:10px;font-weight:500;letter-spacing:.12em;margin-top:3px}
+main{max-width:1050px;margin:auto;padding:24px 16px 90px}.intro{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:8px 0 20px}.intro h1{font-size:27px;margin:0 0 6px;color:#754b5a}.intro h1:before{content:'♡ ';color:var(--accent)}.intro p{margin:0;color:var(--muted);font-size:13px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.primary{background:linear-gradient(135deg,#e79ab0,#cf6f91);color:#fff;border-color:#d77d9a;font-weight:700}.notice{border:1px solid #eed9d0;background:#fff3ec;padding:12px 14px;border-radius:16px;color:#8e6e66;font-size:12px;line-height:1.7;margin-bottom:22px}
+.books{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:22px 16px}.book{min-width:0;cursor:pointer}.cover{aspect-ratio:3/4;border-radius:12px;background:linear-gradient(145deg,#f5dce4,#f9eee5 55%,#e3eee7);border:1px solid #f0d8df;overflow:hidden;display:flex;align-items:center;justify-content:center;box-shadow:0 9px 22px #a66d7b20;position:relative}.cover:after{content:'';position:absolute;inset:7px;border:1px solid #ffffffa8;border-radius:8px;pointer-events:none}.cover img{width:100%;height:100%;object-fit:cover}.cover .placeholder{padding:14px;text-align:center;color:#986579;font-family:Georgia,serif;font-size:18px}.book h3{font-size:14px;margin:10px 2px 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#694b57}.book p{font-size:11px;color:var(--muted);margin:0 2px}
+.empty{grid-column:1/-1;text-align:center;padding:54px 20px;color:var(--muted);border:1px dashed #e6c8d1;background:#fffaf8;border-radius:20px}.empty b{display:block;color:#87566a;font-size:17px;margin-bottom:8px}
+#reader{position:fixed;inset:0;background:#211b20;z-index:10;display:none;flex-direction:column;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+.readerbar{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;border-bottom:1px solid #51414a;flex-shrink:0}.readerbar button{background:#3a3036;color:#fff;border-color:#5c4a54}.readerbar .booktitle{font-size:13px;max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#fff}
+.stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;perspective:1800px;padding:12px 8px;overflow:hidden}.bookstage{position:relative;width:min(96vw,900px);height:min(74vh,680px);display:flex;align-items:center;justify-content:center}.page{position:absolute;max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;background:#fff;box-shadow:0 8px 30px #000a;transform-origin:left center;backface-visibility:hidden}.page.single{position:relative;transform-origin:center center}.page.flip-out{animation:flipOut .42s ease forwards}.page.flip-in{animation:flipIn .42s ease}@keyframes flipOut{to{transform:rotateY(-90deg);opacity:.2}}@keyframes flipIn{from{transform:rotateY(90deg);opacity:.2}to{transform:rotateY(0);opacity:1}}
+.controls{display:flex;align-items:center;justify-content:center;gap:12px;padding:12px}.controls button,.readerfoot button{background:#3a3036;color:#fff;border-color:#5c4a54}.counter{font-variant-numeric:tabular-nums;color:#f2e6eb;font-size:13px;min-width:78px;text-align:center}.progress{height:3px;background:#51414a}.progress>i{display:block;height:100%;background:#e69ab0;width:0}.readerfoot{display:flex;justify-content:center;gap:8px;padding:0 12px 12px}.readerfoot button{font-size:12px;padding:8px 12px}
+#zoomLayer{position:fixed;inset:0;background:#000;z-index:20;display:none;align-items:center;justify-content:center;touch-action:none}#zoomImg{max-width:100%;max-height:100%;object-fit:contain;transform-origin:center;touch-action:none}
+.modal{position:fixed;inset:0;background:#5c39488c;z-index:30;display:none;align-items:center;justify-content:center;padding:20px}.modalbox{width:min(420px,100%);background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:20px;box-shadow:0 16px 50px #64394a30}.modalbox h2{margin:0 0 12px;font-size:18px;color:#754b5a}.modalbox input[type=text]{width:100%;padding:12px;background:#fff9f7;color:var(--ink);border:1px solid #e8cbd4;border-radius:12px;margin:8px 0 16px}.modalbuttons{display:flex;justify-content:flex-end;gap:8px}
+.toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);background:#754b5a;color:#fff;padding:10px 16px;border-radius:30px;font-size:13px;z-index:50;display:none;white-space:nowrap}
+@media(min-width:700px){.bookstage{height:min(78vh,760px)}}
+</style>
+</head>
+<body>
+<header><div class="brand">MY PHOTO LIBRARY<small>PERSONAL PHOTOBOOK VIEWER</small></div><button id="addTop">＋ 追加</button></header>
+<main>
+ <div class="intro"><div><h1>本棚</h1><p>あなたの写真集を、いつでもページめくり。</p></div><div class="actions"><button id="scanBtn">▣ カメラでスキャン</button><button class="primary" id="addBtn">写真集を追加</button></div></div>
+ <div class="notice">読み込んだ画像・PDFは、このブラウザの端末内データベースに保存されます。サーバーには送信しません。Safariの履歴・Webサイトデータ削除や容量不足で消える場合があるため、大切な原本は別途バックアップしてください。</div>
+ <div class="books" id="books"><div class="empty"><b>本棚はまだ空です</b>「写真集を追加」から画像またはPDFを読み込んでください。</div></div>
+</main>
+<input id="fileInput" type="file" accept="image/*,application/pdf" multiple>
+<section id="reader">
+ <div class="readerbar"><button id="closeReader">‹ 本棚</button><div class="booktitle" id="readerTitle"></div><button id="moreBtn">•••</button></div>
+ <div class="progress"><i id="progressBar"></i></div>
+ <div class="stage"><div class="bookstage" id="bookstage"><img class="page single" id="pageImg" alt="写真集のページ"></div></div>
+ <div class="controls"><button id="prev">‹ 前へ</button><div class="counter" id="counter">1 / 1</div><button id="next">次へ ›</button></div>
+ <div class="readerfoot"><button id="zoomBtn">拡大表示</button><button id="firstBtn">最初へ</button><button id="lastBtn">最後へ</button></div>
+</section>
+<div id="zoomLayer"><img id="zoomImg" alt="拡大ページ"></div>
+<div class="modal" id="nameModal"><div class="modalbox"><h2>写真集のタイトル</h2><input id="bookName" type="text" maxlength="80" placeholder="例：お気に入りの写真集"><div class="modalbuttons"><button id="cancelName">キャンセル</button><button class="primary" id="saveName">保存</button></div></div></div>
+
+<div id="scanner" style="display:none;position:fixed;inset:0;z-index:40;background:#080808;flex-direction:column;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)">
+ <div class="readerbar"><button id="scanClose">‹ 戻る</button><div style="font-size:13px">ページ自動スキャン</div><span id="scanCount" style="font-size:12px;color:#ddd">0 ページ</span></div>
+ <div style="position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden">
+  <video id="scanVideo" autoplay playsinline muted style="width:100%;height:100%;object-fit:contain"></video>
+  <canvas id="scanOverlay" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
+  <div id="scanHint" style="position:absolute;left:16px;right:16px;bottom:18px;text-align:center;background:#000a;padding:12px;border-radius:12px;font-size:13px">本のページ全体を枠内に入れてください</div>
+ </div>
+ <div style="padding:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+  <button id="scanPause">一時停止</button><button id="scanManual">手動撮影</button><button class="primary" id="scanFinish">保存して終了</button>
+ </div>
+ <div style="text-align:center;color:#aaa;font-size:11px;padding:0 12px 10px">ページを平らにし、影や反射を避けると認識しやすくなります。</div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const DB_NAME='my-photo-library-v1', STORE='books'; let db, pendingItems=[], currentBook=null, currentIndex=0, currentUrl=null, zoomScale=1;
+const $=id=>document.getElementById(id);
+function toast(s){$('toast').textContent=s;$('toast').style.display='block';setTimeout(()=>$('toast').style.display='none',2400)}
+function openDB(){return new Promise((res,rej)=>{let r=indexedDB.open(DB_NAME,1);r.onupgradeneeded=()=>r.result.createObjectStore(STORE,{keyPath:'id'});r.onsuccess=()=>{db=r.result;res()};r.onerror=()=>rej(r.error)})}
+function tx(mode='readonly'){return db.transaction(STORE,mode).objectStore(STORE)}
+function put(book){return new Promise((res,rej)=>{let r=tx('readwrite').put(book);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+function getAll(){return new Promise((res,rej)=>{let r=tx().getAll();r.onsuccess=()=>res(r.result.sort((a,b)=>b.created-a.created));r.onerror=()=>rej(r.error)})}
+function del(id){return new Promise((res,rej)=>{let r=tx('readwrite').delete(id);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
+function coverUrl(item){return URL.createObjectURL(item.blob)}
+async function renderShelf(){let list=await getAll(),root=$('books');root.innerHTML='';if(!list.length){root.innerHTML='<div class="empty"><b>本棚はまだ空です</b>「写真集を追加」から画像またはPDFを読み込んでください。</div>';return}
+ for(let b of list){let el=document.createElement('div');el.className='book';let cover=b.pages[0];let url=URL.createObjectURL(cover.blob);el.innerHTML=`<div class="cover"><img alt=""></div><h3></h3><p>${b.pages.length} ページ · ${b.kind==='pdf'?'PDF':'画像'}</p>`;el.querySelector('img').src=url;el.querySelector('h3').textContent=b.name;el.onclick=()=>openBook(b.id);el.oncontextmenu=e=>{e.preventDefault();manageBook(b)};root.append(el)}
+}
+async function startImport(files){if(!files.length)return;pendingItems=[];let total=0;
+ for(let f of files){if(f.type==='application/pdf'||f.name.toLowerCase().endsWith('.pdf')){if(!window.pdfjsLib){toast('PDF機能の読み込みに失敗しました。通信状態を確認してください');return}try{let pdf=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise;for(let n=1;n<=pdf.numPages;n++){let p=await pdf.getPage(n),vp=p.getViewport({scale:Math.min(2.2,1800/p.getViewport({scale:1}).width)}),c=document.createElement('canvas'),ctx=c.getContext('2d');c.width=Math.ceil(vp.width);c.height=Math.ceil(vp.height);await p.render({canvasContext:ctx,viewport:vp}).promise;let blob=await new Promise(r=>c.toBlob(r,'image/jpeg',.9));pendingItems.push({blob,type:'image/jpeg',label:`${f.name} - ${n}ページ`});total++}}catch(e){console.error(e);toast('PDFを読み込めませんでした');return}}
+ else if(f.type.startsWith('image/')){pendingItems.push({blob:f,type:f.type,label:f.name});total++}}
+ if(!total){toast('対応する画像またはPDFがありません');return}
+ $('bookName').value=files.length===1?files[0].name.replace(/\.[^.]+$/,''):'新しい写真集';$('nameModal').style.display='flex';
+}
+async function saveImport(){let name=$('bookName').value.trim()||'名称未設定';let b={id:uid(),name,created:Date.now(),kind:pendingItems.some(x=>x.label.includes('.pdf'))?'pdf':'image',pages:pendingItems.map(x=>({blob:x.blob,label:x.label}))};try{await put(b);pendingItems=[];$('nameModal').style.display='none';await renderShelf();toast('写真集を本棚に追加しました')}catch(e){console.error(e);toast('保存できませんでした。端末の空き容量を確認してください')}}
+async function openBook(id){let list=await getAll();currentBook=list.find(b=>b.id===id);if(!currentBook)return;currentIndex=0;$('readerTitle').textContent=currentBook.name;$('reader').style.display='flex';showPage()}
+function showPage(direction){if(!currentBook)return;let page=currentBook.pages[currentIndex];if(currentUrl)URL.revokeObjectURL(currentUrl);currentUrl=URL.createObjectURL(page.blob);let img=$('pageImg');img.className='page single';img.src=currentUrl;$('counter').textContent=`${currentIndex+1} / ${currentBook.pages.length}`;$('progressBar').style.width=((currentIndex+1)/currentBook.pages.length*100)+'%';$('prev').disabled=currentIndex===0;$('next').disabled=currentIndex===currentBook.pages.length-1}
+function turn(d){let next=currentIndex+d;if(!currentBook||next<0||next>=currentBook.pages.length)return;let img=$('pageImg');img.classList.remove('flip-in');img.classList.add('flip-out');setTimeout(()=>{currentIndex=next;showPage();$('pageImg').classList.add('flip-in')},180)}
+async function manageBook(b){if(confirm(`「${b.name}」を本棚から削除しますか？\n保存したページもこのブラウザから削除されます。`)){await del(b.id);renderShelf();toast('削除しました')}}
+$('addBtn').onclick=$('addTop').onclick=()=>$('fileInput').click();$('fileInput').onchange=e=>{startImport([...e.target.files]);e.target.value=''};
+$('saveName').onclick=saveImport;$('cancelName').onclick=()=>$('nameModal').style.display='none';$('closeReader').onclick=()=>{$('reader').style.display='none';if(currentUrl)URL.revokeObjectURL(currentUrl);currentUrl=null;currentBook=null};
+$('prev').onclick=()=>turn(-1);$('next').onclick=()=>turn(1);$('firstBtn').onclick=()=>{currentIndex=0;showPage()};$('lastBtn').onclick=()=>{currentIndex=currentBook.pages.length-1;showPage()};
+$('moreBtn').onclick=()=>{if(currentBook)manageBook(currentBook)};
+$('zoomBtn').onclick=()=>{if(!currentUrl)return;$('zoomImg').src=currentUrl;$('zoomLayer').style.display='flex';zoomScale=1;$('zoomImg').style.transform='scale(1)'};
+$('zoomLayer').onclick=()=>{$('zoomLayer').style.display='none'};
+let startX=0; $('bookstage').addEventListener('touchstart',e=>{startX=e.touches[0].clientX},{passive:true});$('bookstage').addEventListener('touchend',e=>{let dx=e.changedTouches[0].clientX-startX;if(Math.abs(dx)>55)turn(dx<0?1:-1)},{passive:true});
+document.addEventListener('keydown',e=>{if($('reader').style.display==='flex'){if(e.key==='ArrowRight')turn(1);if(e.key==='ArrowLeft')turn(-1);if(e.key==='Escape')$('closeReader').click()}});
+let pinchStart=0; $('zoomLayer').addEventListener('touchmove',e=>{if(e.touches.length===2){e.preventDefault();let d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);if(!pinchStart)pinchStart=d;zoomScale=Math.max(1,Math.min(4,d/pinchStart));$('zoomImg').style.transform=`scale(${zoomScale})`}},{passive:false});$('zoomLayer').addEventListener('touchend',()=>pinchStart=0);
+openDB().then(async()=>{try{if(navigator.storage?.persist)await navigator.storage.persist()}catch(e){console.warn('persistent storage request',e)}await renderShelf()}).catch(e=>{console.error(e);toast('このブラウザではローカル保存を利用できません')});
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(e=>console.warn('service worker',e)));}
+</script>
+
+<script>
+(()=>{
+ const $=id=>document.getElementById(id);
+ let stream=null, scanActive=false, paused=false, cvReady=false, stable=0, lastShot=0, scanPages=[], scanBookName='スキャンした写真集', raf=0;
+ let cvLoading=null;
+ function loadCV(){
+  if(window.cv && window.cv.Mat)return Promise.resolve();
+  if(cvLoading)return cvLoading;
+  cvLoading=new Promise((resolve,reject)=>{
+   const s=document.createElement('script');s.src='https://docs.opencv.org/4.x/opencv.js';
+   s.onload=()=>{let tries=0;const wait=()=>{if(window.cv&&cv.Mat){cvReady=true;resolve()}else if(++tries>100)reject(new Error('OpenCV timeout'));else setTimeout(wait,100)};wait()};
+   s.onerror=reject;document.head.appendChild(s);
+  });return cvLoading;
+ }
+ function orderPts(pts){
+  let sum=pts.map(p=>p.x+p.y),diff=pts.map(p=>p.x-p.y);
+  return [pts[sum.indexOf(Math.min(...sum))],pts[diff.indexOf(Math.max(...diff))],pts[sum.indexOf(Math.max(...sum))],pts[diff.indexOf(Math.min(...diff))]];
+ }
+ function detect(){
+  if(!scanActive||paused)return;
+  const v=$('scanVideo'), overlay=$('scanOverlay');
+  if(v.readyState<2){raf=requestAnimationFrame(detect);return}
+  const w=v.videoWidth,h=v.videoHeight;if(!w||!h){raf=requestAnimationFrame(detect);return}
+  const maxW=640, scale=Math.min(1,maxW/w), sw=Math.round(w*scale),sh=Math.round(h*scale);
+  const c=document.createElement('canvas');c.width=sw;c.height=sh;const cx=c.getContext('2d');cx.drawImage(v,0,0,sw,sh);
+  let corners=null;
+  try{
+   let src=cv.imread(c), gray=new cv.Mat(), blur=new cv.Mat(), edges=new cv.Mat(), contours=new cv.MatVector(), hierarchy=new cv.Mat();
+   cv.cvtColor(src,gray,cv.COLOR_RGBA2GRAY);cv.GaussianBlur(gray,blur,new cv.Size(5,5),0);cv.Canny(blur,edges,45,130);
+   cv.findContours(edges,contours,hierarchy,cv.RETR_LIST,cv.CHAIN_APPROX_SIMPLE);
+   let best=0;
+   for(let i=0;i<contours.size();i++){
+    let cnt=contours.get(i), peri=cv.arcLength(cnt,true), approx=new cv.Mat();
+    cv.approxPolyDP(cnt,approx,0.025*peri,true);
+    let area=Math.abs(cv.contourArea(approx));
+    if(approx.rows===4&&area>sw*sh*.16&&area>best&&cv.isContourConvex(approx)){
+     let pts=[];for(let j=0;j<4;j++)pts.push({x:approx.intAt(j,0),y:approx.intAt(j,1)});
+     corners=orderPts(pts);best=area;
+    }
+    cnt.delete();approx.delete();
+   }
+   src.delete();gray.delete();blur.delete();edges.delete();contours.delete();hierarchy.delete();
+  }catch(e){console.warn('page detection',e)}
+  overlay.width=overlay.clientWidth*devicePixelRatio;overlay.height=overlay.clientHeight*devicePixelRatio;
+  const ox=overlay.getContext('2d');ox.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);ox.clearRect(0,0,overlay.clientWidth,overlay.clientHeight);
+  if(corners){
+   const rect=v.getBoundingClientRect(), scaleX=rect.width/w,scaleY=rect.height/h;
+   const displayPts=corners.map(p=>({x:(p.x/scale)*scaleX+(overlay.clientWidth-rect.width)/2,y:(p.y/scale)*scaleY+(overlay.clientHeight-rect.height)/2}));
+   ox.strokeStyle='#71f0a5';ox.lineWidth=3;ox.beginPath();displayPts.forEach((p,i)=>i?ox.lineTo(p.x,p.y):ox.moveTo(p.x,p.y));ox.closePath();ox.stroke();
+   stable++;$('scanHint').textContent=stable>8?'ページを認識中…そのまま静止してください':'ページを検出しました。位置を安定させてください';
+   if(stable>14&&Date.now()-lastShot>1800){capturePage(corners,w,h);lastShot=Date.now();stable=0}
+  }else{stable=0;$('scanHint').textContent='ページ全体が映るようにカメラを調整してください'}
+  raf=requestAnimationFrame(detect);
+ }
+ function capturePage(points,videoW,videoH){
+  try{
+   const v=$('scanVideo'), pts=points.map(p=>({x:p.x/Math.min(1,640/videoW),y:p.y/Math.min(1,640/videoW)}));
+   const width=Math.max(Math.hypot(pts[1].x-pts[0].x,pts[1].y-pts[0].y),Math.hypot(pts[2].x-pts[3].x,pts[2].y-pts[3].y));
+   const height=Math.max(Math.hypot(pts[3].x-pts[0].x,pts[3].y-pts[0].y),Math.hypot(pts[2].x-pts[1].x,pts[2].y-pts[1].y));
+   const outW=Math.min(2600,Math.max(900,Math.round(width))),outH=Math.min(3600,Math.max(1200,Math.round(height)));
+   let src=new cv.Mat(videoH,videoW,cv.CV_8UC4), frame=document.createElement('canvas');frame.width=videoW;frame.height=videoH;frame.getContext('2d').drawImage(v,0,0,videoW,videoH);cv.imread(frame).copyTo(src);
+   let srcPts=cv.matFromArray(4,1,cv.CV_32FC2,[pts[0].x,pts[0].y,pts[1].x,pts[1].y,pts[2].x,pts[2].y,pts[3].x,pts[3].y]);
+   let dstPts=cv.matFromArray(4,1,cv.CV_32FC2,[0,0,outW-1,0,outW-1,outH-1,0,outH-1]);
+   let M=cv.getPerspectiveTransform(srcPts,dstPts),dst=new cv.Mat();cv.warpPerspective(src,dst,M,new cv.Size(outW,outH),cv.INTER_CUBIC,cv.BORDER_REPLICATE);
+   // Mild brightness/contrast normalization; keep original color information.
+   let rgba=new cv.Mat();cv.convertScaleAbs(dst,rgba,1.04,3);
+   let out=document.createElement('canvas');out.width=outW;out.height=outH;cv.imshow(out,rgba);
+   out.toBlob(blob=>{if(blob){scanPages.push({blob,type:'image/jpeg',label:`スキャン ${scanPages.length+1}`});$('scanCount').textContent=scanPages.length+' ページ';$('scanHint').textContent=`${scanPages.length}ページを撮影しました。次のページへ進んでください`;navigator.vibrate?.(35)}},'image/jpeg',.94);
+   src.delete();srcPts.delete();dstPts.delete();M.delete();dst.delete();rgba.delete();
+  }catch(e){console.error(e);$('scanHint').textContent='撮影に失敗しました。もう一度位置を調整してください'}
+ }
+ async function start(){
+  $('scanner').style.display='flex';$('scanHint').textContent='カメラを起動しています…';scanPages=[];stable=0;paused=false;scanActive=false;
+  try{
+   if(!navigator.mediaDevices?.getUserMedia)throw new Error('このSafariではカメラAPIを利用できません。SafariでHTTPSのサイトを開いてください。');
+   stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:2560}}});
+   const video=$('scanVideo');video.srcObject=stream;await video.play();
+   $('scanCount').textContent='0 ページ';$('scanPause').textContent='一時停止';scanActive=true;
+   $('scanHint').textContent='カメラ起動OK。自動補正を準備しています…';
+   // カメラ映像を先に出す。OpenCVのCDN待ちでカメラ起動を止めない。
+   loadCV().then(()=>{if(scanActive){$('scanHint').textContent='ページ全体を枠内に入れてください';stable=0;raf=requestAnimationFrame(detect)}})
+    .catch(err=>{console.warn('OpenCV unavailable; manual full-frame capture enabled',err);cvReady=false;$('scanHint').textContent='自動検出は利用できません。ページを画面に合わせて「手動撮影」を使えます。'});
+  }catch(e){console.error('camera start failed',e);$('scanHint').textContent='カメラを起動できませんでした：'+(e.name||'Error')+' / '+(e.message||'原因不明')+'。Safariのサイト別カメラ設定とiPhoneのカメラ許可を確認してください。';}
+ }
+ function stopCamera(){scanActive=false;cancelAnimationFrame(raf);if(stream){stream.getTracks().forEach(t=>t.stop());stream=null} $('scanVideo').srcObject=null}
+ function manual(){
+  if(!stream)return;
+  const v=$('scanVideo'),w=v.videoWidth,h=v.videoHeight;if(!w||!h){$('scanHint').textContent='映像の準備中です。少し待ってください';return}
+  // OpenCVが使える場合は従来の四隅補正を試す。失敗・未読込ならフレーム全体を保存。
+  if(cvReady&&window.cv&&cv.Mat){
+   try{const tmp=document.createElement('canvas');tmp.width=640;tmp.height=Math.round(640*h/w);tmp.getContext('2d').drawImage(v,0,0,tmp.width,tmp.height);let img=cv.imread(tmp),gray=new cv.Mat(),edges=new cv.Mat(),contours=new cv.MatVector(),hier=new cv.Mat();cv.cvtColor(img,gray,cv.COLOR_RGBA2GRAY);cv.Canny(gray,edges,40,120);cv.findContours(edges,contours,hier,cv.RETR_LIST,cv.CHAIN_APPROX_SIMPLE);let best=null,area=0;for(let i=0;i<contours.size();i++){let ct=contours.get(i),per=cv.arcLength(ct,true),a=new cv.Mat();cv.approxPolyDP(ct,a,.025*per,true);let ar=Math.abs(cv.contourArea(a));if(a.rows===4&&ar>area&&ar>tmp.width*tmp.height*.15){let ps=[];for(let j=0;j<4;j++)ps.push({x:a.intAt(j,0),y:a.intAt(j,1)});best=orderPts(ps);area=ar}ct.delete();a.delete()}img.delete();gray.delete();edges.delete();contours.delete();hier.delete();if(best){capturePage(best,w,h);return}}
+   catch(e){console.warn('manual perspective correction failed',e)}
+  }
+  const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;canvas.getContext('2d').drawImage(v,0,0,w,h);
+  canvas.toBlob(blob=>{if(blob){scanPages.push({blob,type:'image/jpeg',label:`スキャン ${scanPages.length+1}`});$('scanCount').textContent=scanPages.length+' ページ';$('scanHint').textContent=`${scanPages.length}ページを撮影しました（全体撮影）。次のページへ進んでください`;navigator.vibrate?.(35)}else $('scanHint').textContent='撮影画像を保存できませんでした'},'image/jpeg',.94);
+ }
+
+ async function finish(){
+  stopCamera();$('scanner').style.display='none';
+  if(!scanPages.length){toast('撮影したページがありません');return}
+  const name=prompt('写真集のタイトルを入力してください',scanBookName)||'スキャンした写真集';
+  const book={id:uid(),name,created:Date.now(),kind:'image',pages:scanPages.map(p=>({blob:p.blob,label:p.label}))};
+  try{await put(book);await renderShelf();toast(scanPages.length+'ページを本棚に保存しました')}catch(e){toast('保存できませんでした。端末の空き容量を確認してください')}
+  scanPages=[];
+ }
+ $('scanBtn').addEventListener('click',start);$('scanClose').addEventListener('click',()=>{stopCamera();$('scanner').style.display='none'});$('scanFinish').addEventListener('click',finish);
+ $('scanPause').addEventListener('click',()=>{paused=!paused;$('scanPause').textContent=paused?'再開':'一時停止';if(!paused){stable=0;raf=requestAnimationFrame(detect)}});
+ $('scanManual').addEventListener('click',manual);
+})();
+</script>
+
+</body></html>
